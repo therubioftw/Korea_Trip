@@ -307,8 +307,9 @@ function render(d){
 }
 function formatRaw(a,c){
   if(a===null||a===undefined||a==='') return '';
-  var n = Number(a).toLocaleString('he-IL');
-  return (c||'') + n;
+  var n = Number(a);
+  if(isNaN(n)) return '';
+  return (c||'') + n.toLocaleString('he-IL');
 }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m];}); }
 
