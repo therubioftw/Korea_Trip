@@ -241,12 +241,6 @@ var selDate = null;          // chosen date 'YYYY-MM-DD'
 var calY, calM;              // month currently shown in the calendar
 var HE_MONTHS = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
 var HE_WD = ['א','ב','ג','ד','ה','ו','ש'];   // Sun..Sat
-// ----- live flight status (AeroDataBox via RapidAPI; key is public by design — rotate anytime) -----
-var FLIGHT_API_KEY = "9d6dc72824msh095e5f9ff665c81p18f243jsn0ac8c6c31914";
-var FLIGHT_API_HOST = "aerodatabox.p.rapidapi.com";
-var FS_TTL_MS = 30*60*1000;   // cache each flight's status for 30 min
-var FS_WINDOW_DAYS = 3;       // only hit the API for flights within this many days
-var _fsLast = 0;              // timestamp of last network call (1 req/sec rate-limit guard)
 var MON3 = {Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
 
 /* ---------- helpers ---------- */
@@ -500,43 +494,18 @@ function renderInfo(d){
   updateFlightStatuses();
 }
 
-/* ---------- live flight status (client-side, AeroDataBox) ---------- */
-function sleep(ms){ return new Promise(function(r){ setTimeout(r,ms); }); }
+/* ---------- live flight status (fetched via the private Apps Script relay; no key in this app) ---------- */
 function toYMD(s){
   var m=String(s).match(/(\d{1,2})[-\s]([A-Za-z]{3})[A-Za-z]*[-\s,]+(\d{4})/);
   if(m && MON3[m[2]]) return m[3]+'-'+MON3[m[2]]+'-'+(m[1].length<2?'0'+m[1]:m[1]);
   var d=new Date(s); if(!isNaN(d.getTime())) return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());
   return null;
 }
-function daysFromToday(ymd){
-  var p=String(ymd).split('-'); if(p.length<3) return 999;
-  var t=new Date(), today=new Date(t.getFullYear(),t.getMonth(),t.getDate());
-  var f=new Date(+p[0],+p[1]-1,+p[2]);
-  return Math.round((f-today)/86400000);
-}
-function dtLocal(s){ return new Date(String(s).replace(' ','T')); }   // "2026-06-23 15:35+03:00"
-function hhmm(s){ return String(s).slice(11,16); }                    // airport-local HH:MM straight from string
-
-async function getFlightStatus(num,date){
-  var ck='fs:'+num+':'+date;
-  try{ var c=JSON.parse(localStorage.getItem(ck)||'null'); if(c && (Date.now()-c.at)<FS_TTL_MS) return c.data; }catch(e){}
-  var wait=1200-(Date.now()-_fsLast); if(wait>0) await sleep(wait);   // honour 1 req/sec
-  _fsLast=Date.now();
-  try{
-    var r=await fetch('https://'+FLIGHT_API_HOST+'/flights/number/'+encodeURIComponent(num)+'/'+date,
-      {headers:{'X-RapidAPI-Key':FLIGHT_API_KEY,'X-RapidAPI-Host':FLIGHT_API_HOST}});
-    if(!r.ok) return null;
-    var arr=await r.json();
-    var data=(Array.isArray(arr)&&arr.length)?arr[0]:null;
-    if(data) localStorage.setItem(ck,JSON.stringify({at:Date.now(),data:data}));
-    return data;
-  }catch(e){ return null; }
-}
+function dtLocal(s){ return new Date(String(s).replace(' ','T')); }
+function hhmm(s){ return String(s).slice(11,16); }
 function applyBadge(el,f){
   var s=(f.status||'').toLowerCase();
-  var dep=f.departure||{};
-  var schedT=(dep.scheduledTime||{}).local;
-  var revT=((dep.revisedTime||dep.predictedTime||{})||{}).local;
+  var schedT=f.depScheduled||'', revT=f.depRevised||'';
   var label='מתוכננת', cls='fs-sched';
   if(/cancel/.test(s)){ label='בוטלה'; cls='fs-bad'; }
   else if(/divert/.test(s)){ label='הוסטה'; cls='fs-bad'; }
@@ -551,17 +520,15 @@ function applyBadge(el,f){
 }
 var _fsBusy=false;
 async function updateFlightStatuses(){
-  if(_fsBusy) return; _fsBusy=true;
+  if(_fsBusy || !API_URL) return; _fsBusy=true;
   try{
-    var spans=[].slice.call(document.querySelectorAll('#flights .fl-status'));
-    for(var i=0;i<spans.length;i++){
-      var el=spans[i], num=el.dataset.num, date=el.dataset.date;
-      if(!num||!date) continue;
-      var diff=daysFromToday(date);
-      if(diff<-1 || diff>FS_WINDOW_DAYS){ el.textContent='מתוכננת'; el.className='fl-status fs-sched'; continue; }
-      var data=await getFlightStatus(num,date);
-      if(data) applyBadge(el,data);
-    }
+    var map={};
+    try{ var r=await fetch(API_URL+'?action=flights'); var j=await r.json(); map=(j&&j.flightStatus)||{}; }catch(e){ map={}; }
+    [].slice.call(document.querySelectorAll('#flights .fl-status')).forEach(function(el){
+      var k=(el.dataset.num||'').replace(/\s+/g,'')+'|'+(el.dataset.date||'');
+      if(map[k]) applyBadge(el,map[k]);
+      else { el.textContent='מתוכננת'; el.className='fl-status fs-sched'; }
+    });
   } finally { _fsBusy=false; }
 }
 
