@@ -4,7 +4,7 @@
      used only as an offline fallback.
    - Static assets (icons, manifest) are cache-first for speed.
    - API calls to Apps Script are never touched — always live. */
-var CACHE = 'korea-expenses-v3';
+var CACHE = 'korea-expenses-v4';
 var SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', function (e) {
@@ -36,9 +36,9 @@ self.addEventListener('fetch', function (e) {
                url.replace(/[?#].*$/, '').endsWith('/');
 
   if (isPage) {
-    // NETWORK-FIRST: always try to fetch the freshest page.
+    // NETWORK-FIRST, bypassing the HTTP cache so the newest deploy always wins.
     e.respondWith(
-      fetch(req).then(function (res) {
+      fetch('./index.html', { cache: 'no-store' }).then(function (res) {
         var copy = res.clone();
         caches.open(CACHE).then(function (c) { c.put('./index.html', copy); });
         return res;
