@@ -429,7 +429,7 @@ function flCard(r){
       '<div class="fl-ar">✈</div>'+
       '<div class="fl-pt"><div class="t">'+esc(r[7])+'</div><div class="p">'+esc(r[5])+'<br>'+esc(r[8])+'</div></div>'+
     '</div>'+
-    '<div class="fl-meta">'+esc(r[0])+' · '+esc(r[9])+'</div>'+
+    '<div class="fl-meta"><span class="ltr">'+esc(r[0])+'</span> · <span class="ltr">'+esc(r[9])+'</span></div>'+
     (r[10]?'<div class="fl-note">'+esc(r[10])+'</div>':'')+
   '</div>';
 }
@@ -468,10 +468,10 @@ function renderInfo(d){
       var tel=(r[7]||'').replace(/[^+\d]/g,'');
       h2+='<div class="lg">'+
         '<div class="lg-name">'+esc(r[1])+' · '+esc(r[2])+'</div>'+
-        '<div class="lg-row"><span class="k">צ׳ק-אין:</span> '+esc(r[0])+'</div>'+
-        '<div class="lg-row"><span class="k">צ׳ק-אאוט:</span> '+esc(r[5])+'</div>'+
+        '<div class="lg-row"><span class="k">צ׳ק-אין:</span> <span class="ltr">'+esc(r[0])+'</span></div>'+
+        '<div class="lg-row"><span class="k">צ׳ק-אאוט:</span> <span class="ltr">'+esc(r[5])+'</span></div>'+
         '<div class="lg-row"><span class="k">מספר לילות:</span> '+esc(r[6])+'</div>'+
-        (r[8]?'<div class="lg-row"><span class="k">שעות:</span> '+esc(r[8])+'</div>':'')+
+        (r[8]?'<div class="lg-row"><span class="k">שעות:</span> <span class="ltr">'+esc(r[8])+'</span></div>':'')+
         '<div class="lg-row lg-addr"><span class="k">כתובת (אנגלית):</span><br><span class="ltr">'+esc(r[3])+'</span></div>'+
         '<div class="lg-row lg-addr"><span class="k">כתובת (קוריאנית):</span><br><span class="ltr">'+esc(r[4])+'</span></div>'+
         '<div><a class="lg-link" href="'+esc(maps)+'" target="_blank" rel="noopener">📍 פתח במפות</a></div>'+
