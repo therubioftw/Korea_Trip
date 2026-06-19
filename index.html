@@ -109,6 +109,9 @@
   <section id="viewAdd" class="hidden">
     <div class="card">
       <h2>הוספת הוצאה</h2>
+      <label>מתי?</label>
+      <input id="when" type="date">
+
       <label>מי שילם?</label>
       <select id="who"></select>
 
@@ -124,6 +127,7 @@
           <label>מטבע</label>
           <div class="seg" id="curSeg">
             <button type="button" data-cur="₩" class="on">₩</button>
+            <button type="button" data-cur="$">$</button>
             <button type="button" data-cur="₪">₪</button>
           </div>
         </div>
@@ -178,6 +182,10 @@ var lastData = null;
 
 /* ---------- helpers ---------- */
 function $(id){ return document.getElementById(id); }
+function todayStr(){
+  var d=new Date(), p=function(n){return (n<10?'0':'')+n;};
+  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());
+}
 function fmtNIS(n){
   if(n===null||n===undefined||isNaN(n)) return '—';
   return '₪' + Math.abs(n).toLocaleString('he-IL',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -227,6 +235,7 @@ function addExpense(){
   var who=$('who').value;
   var amount=parseFloat($('amount').value);
   var what=$('what').value.trim();
+  var when=$('when').value || todayStr();   // YYYY-MM-DD
   if(!who){ toast('בחר מי שילם',true); return; }
   if(!(amount>0)){ toast('הכנס סכום תקין',true); return; }
 
@@ -234,13 +243,13 @@ function addExpense(){
   fetch(API_URL,{
     method:'POST',
     headers:{'Content-Type':'text/plain;charset=utf-8'}, // text/plain avoids CORS preflight
-    body:JSON.stringify({action:'add', who:who, what:what, amount:amount, currency:selectedCur})
+    body:JSON.stringify({action:'add', date:when, who:who, what:what, amount:amount, currency:selectedCur})
   })
   .then(function(r){ return r.json(); })
   .then(function(d){
     if(!d || d.ok===false){ throw new Error(d && d.error || 'bad response'); }
     lastData=d; render(d); setStatus('live');
-    $('amount').value=''; $('what').value='';
+    $('amount').value=''; $('what').value=''; $('when').value=todayStr();
     toast('נוסף ✓');
   })
   .catch(function(e){ toast('שגיאה בשמירה — נסה שוב',true); })
@@ -289,7 +298,7 @@ function render(d){
       var el=document.createElement('div'); el.className='exp';
       el.innerHTML =
         '<div><div class="who">'+esc(x.who)+'</div>'+
-        '<div class="what">'+esc(x.what||'')+'</div></div>'+
+        '<div class="what">'+esc(x.what||'')+ (x.date?' · '+esc(x.date):'') +'</div></div>'+
         '<div class="amt">'+ (x.nisText||fmtNIS(x.nis)) +
           '<small>'+ formatRaw(x.amount,x.currency) +'</small></div>';
       rec.appendChild(el);
@@ -328,6 +337,7 @@ function startPolling(){
 document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible') loadData(); });
 
 /* ---------- boot ---------- */
+$('when').value=todayStr();
 if(API_URL){ $('apiUrl').value=API_URL; }
 loadData();
 startPolling();
