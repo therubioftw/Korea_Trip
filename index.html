@@ -85,8 +85,9 @@
   .center{text-align:center}
 
   /* custom date picker */
-  .datefield{display:flex; align-items:center; justify-content:space-between; cursor:pointer; text-align:right}
-  .datefield .cal-ic{font-size:18px; opacity:.7}
+  .datefield{display:inline-flex; align-items:center; gap:8px; border:none; background:none; padding:4px 0 2px; margin-top:2px; font-size:19px; font-weight:700; color:var(--ink); cursor:pointer; text-align:right}
+  .datefield #dateText{border-bottom:1.5px dashed var(--blue2); padding-bottom:2px}
+  .datefield .cal-ic{font-size:14px; color:var(--blue2)}
   .cal{margin-top:8px; border:1.5px solid var(--line); border-radius:14px; padding:12px; background:#fff; box-shadow:0 6px 20px rgba(20,33,62,.10)}
   .cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px}
   .cal-head .m{font-weight:800; font-size:15px}
@@ -126,7 +127,7 @@
     <div class="card">
       <h2>הוספת הוצאה</h2>
       <label>מתי?</label>
-      <button type="button" id="dateField" class="datefield"><span id="dateText"></span><span class="cal-ic">📅</span></button>
+      <button type="button" id="dateField" class="datefield"><span id="dateText"></span><span class="cal-ic">✎</span></button>
       <div id="cal" class="cal hidden"></div>
 
       <label>מי שילם?</label>
