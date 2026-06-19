@@ -1,6 +1,10 @@
-/* Service worker: caches the app shell so it opens instantly & works offline.
-   Data (the Apps Script calls) is always fetched live, never cached. */
-var CACHE = 'korea-expenses-v1';
+/* Service worker.
+   - The PAGE (index.html / navigations) is served NETWORK-FIRST, so everyone
+     always gets the latest version on the normal root URL; the cached copy is
+     used only as an offline fallback.
+   - Static assets (icons, manifest) are cache-first for speed.
+   - API calls to Apps Script are never touched — always live. */
+var CACHE = 'korea-expenses-v3';
 var SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', function (e) {
@@ -18,15 +22,41 @@ self.addEventListener('activate', function (e) {
 });
 
 self.addEventListener('fetch', function (e) {
-  var url = e.request.url;
-  // Never cache API calls to Apps Script — always go to the network.
+  var req = e.request;
+  var url = req.url;
+
+  // Never cache the Apps Script API — always go to the network.
   if (url.indexOf('script.google.com') !== -1 || url.indexOf('googleusercontent.com') !== -1) {
-    return; // let the browser handle it normally
+    return;
   }
-  // App shell: cache-first.
+
+  var isPage = req.mode === 'navigate' ||
+               req.destination === 'document' ||
+               url.indexOf('index.html') !== -1 ||
+               url.replace(/[?#].*$/, '').endsWith('/');
+
+  if (isPage) {
+    // NETWORK-FIRST: always try to fetch the freshest page.
+    e.respondWith(
+      fetch(req).then(function (res) {
+        var copy = res.clone();
+        caches.open(CACHE).then(function (c) { c.put('./index.html', copy); });
+        return res;
+      }).catch(function () {
+        return caches.match('./index.html').then(function (hit) { return hit || caches.match('./'); });
+      })
+    );
+    return;
+  }
+
+  // Static assets: cache-first, fall back to network.
   e.respondWith(
-    caches.match(e.request).then(function (hit) {
-      return hit || fetch(e.request);
+    caches.match(req).then(function (hit) {
+      return hit || fetch(req).then(function (res) {
+        var copy = res.clone();
+        caches.open(CACHE).then(function (c) { c.put(req, copy); });
+        return res;
+      });
     })
   );
 });

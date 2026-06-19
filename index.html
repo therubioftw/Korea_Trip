@@ -118,19 +118,14 @@
       <label>על מה?</label>
       <input id="what" type="text" inputmode="text" placeholder="לדוגמה: ארוחת ערב, מונית, כניסה למוזיאון">
 
-      <div class="row2">
-        <div>
-          <label>כמה?</label>
-          <input id="amount" type="number" inputmode="decimal" min="0" step="any" placeholder="0">
-        </div>
-        <div>
-          <label>מטבע</label>
-          <div class="seg" id="curSeg">
-            <button type="button" data-cur="₩" class="on">₩</button>
-            <button type="button" data-cur="$">$</button>
-            <button type="button" data-cur="₪">₪</button>
-          </div>
-        </div>
+      <label>כמה?</label>
+      <input id="amount" type="number" inputmode="decimal" min="0" step="any" placeholder="0">
+
+      <label>מטבע</label>
+      <div class="seg" id="curSeg">
+        <button type="button" data-cur="₩" class="on">₩</button>
+        <button type="button" data-cur="$">$</button>
+        <button type="button" data-cur="₪">₪</button>
       </div>
 
       <button class="btn" id="addBtn">הוסף הוצאה</button>
