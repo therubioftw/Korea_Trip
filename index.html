@@ -278,6 +278,7 @@
     <div class="card">
       <h2>🗣️ ביטויים שימושיים</h2>
       <div id="phrases"></div>
+      <div class="small" style="margin-top:12px; line-height:1.6">💡 לשומרי כשרות: בקוריאה "בשר" (고기) ו"פירות ים" (해산물) הן מילים נפרדות — אם לא אוכלים את שניהם, חשוב לציין את שניהם. גם מרקים ותבשילים רבים מבושלים על בסיס פירות ים (אנשובי), אז תמיד כדאי לשאול.</div>
     </div>
     <button class="btn secondary" id="shareBtn">📤 שתף את האפליקציה</button>
   </section>
@@ -745,14 +746,24 @@ function tickClock(){
 var PHRASES=[
   ['שלום / היי','안녕하세요','an-nyong-ha-se-yo'],
   ['תודה','감사합니다','gam-sa-ham-ni-da'],
+  ['בבקשה (תנו לי…)','주세요','ju-se-yo'],
   ['כן','네','ne'],
   ['לא','아니요','a-ni-yo'],
   ['סליחה','죄송합니다','jwe-song-ham-ni-da'],
   ['כמה זה עולה?','얼마예요?','ol-ma-ye-yo'],
   ['איפה השירותים?','화장실이 어디예요?','hwa-jang-shil-i o-di-ye-yo'],
+  ['סליחה / הֵי (למלצר)','여기요','yo-gi-yo'],
+  ['עזרה!','도와주세요','do-wa-ju-se-yo'],
+  ['לפני האוכל (אומרים למבשל/מארח)','잘 먹겠습니다','jal mok-ge-sumnida'],
+  ['אחרי האוכל ("היה טעים, תודה")','잘 먹었습니다','jal mo-go-sumnida'],
+  ['בתיאבון (אומרים לאחרים)','맛있게 드세요','ma-shit-ge deu-se-yo'],
   ['טעים!','맛있어요','ma-shi-sso-yo'],
-  ['סליחה / הנה (למלצר)','여기요','yo-gi-yo'],
-  ['עזרה!','도와주세요','do-wa-ju-se-yo']
+  ['אני לא אוכל/ת חזיר','저는 돼지고기 안 먹어요','jeo-neun dwae-ji-go-gi an mo-go-yo'],
+  ['אני לא אוכל/ת בשר ופירות ים','저는 고기하고 해산물 못 먹어요','jeo-neun go-gi-ha-go hae-san-mul mot mo-go-yo'],
+  ['יש בזה חזיר?','이거 돼지고기 들어가요?','i-go dwae-ji-go-gi deu-ro-ga-yo'],
+  ['יש בזה פירות ים?','이거 해산물 들어가요?','i-go hae-san-mul deu-ro-ga-yo'],
+  ['יש מנה בלי בשר ובלי פירות ים?','고기나 해산물 안 들어간 메뉴 있나요?','go-gi-na hae-san-mul an deu-ro-gan me-nyu in-na-yo'],
+  ['אני צמחוני/ת','저는 채식주의자예요','jeo-neun chae-shik-ju-ui-ja-ye-yo']
 ];
 function renderPhrases(){
   var el=$('phrases'); if(!el) return;
