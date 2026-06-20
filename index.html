@@ -156,8 +156,10 @@
   .conv{display:flex; gap:10px; align-items:flex-end}
   .conv > div{flex:1}
   .conv .swap{font-size:20px; color:var(--muted); padding-bottom:12px}
-  /* countdown + essentials */
-  .countdown{background:linear-gradient(135deg,var(--blue),var(--blue2)); color:#fff; font-weight:800; font-size:16px; text-align:center}
+  /* countdown */
+  .countdown{text-align:center; padding:20px 18px}
+  .cd-num{font-size:46px; font-weight:800; color:var(--blue2); line-height:1; display:block}
+  .cd-label{font-size:15px; color:var(--muted); font-weight:700; margin-top:6px; display:block}
   /* Israel clock + phrases (שימושי tab) */
   .clock{font-size:34px; font-weight:800; color:var(--blue); text-align:center; font-variant-numeric:tabular-nums; letter-spacing:1px; direction:ltr}
   .ph{padding:9px 0; border-top:1px solid var(--line)}
@@ -168,10 +170,6 @@
 
   /* theme toggle */
   .theme-btn{position:absolute; top:calc(env(safe-area-inset-top) + 14px); left:16px; background:rgba(255,255,255,.18); border:none; color:#fff; width:36px; height:36px; border-radius:10px; font-size:17px; cursor:pointer}
-  /* summary avatars */
-  .p-id{display:flex; align-items:center; gap:11px}
-  .avatar{width:40px; height:40px; border-radius:50%; color:#fff; font-weight:800; font-size:17px; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0}
-  .person .name, .person .meta{display:block}
   /* active tab accent */
   .tabbar button{position:relative; transition:color .15s}
   .tabbar button.on::before{content:''; position:absolute; top:-8px; left:50%; transform:translateX(-50%); width:26px; height:3px; border-radius:3px; background:var(--blue2)}
@@ -339,6 +337,8 @@ var MON3 = {Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'
 var GENDER = { 'רועי':'m', 'אילנה':'f', 'לואיז ויעקב':'p' };
 function needWord(name){ var g=GENDER[name]||'m'; return g==='f'?'צריכה':g==='p'?'צריכים':'צריך'; }
 function settledWord(name){ var g=GENDER[name]||'m'; return g==='f'?'מאוזנת':g==='p'?'מאוזנים':'מאוזן'; }
+function paidWord(name){ var g=GENDER[name]||'m'; return g==='f'?'שילמה':g==='p'?'שילמו':'שילם'; }
+function shareWord(name){ var g=GENDER[name]||'m'; return g==='f'?'החלק שלה הוא':g==='p'?'החלק שלהם הוא':'החלק שלו הוא'; }
 
 /* ---------- helpers ---------- */
 function $(id){ return document.getElementById(id); }
@@ -521,9 +521,8 @@ function render(d){
       else if(rem!==null && rem<-0.5){ cls='gets'; label=needWord(s.name)+' לקבל ' + fmtNIS(rem); }
       var row=document.createElement('div'); row.className='person';
       row.innerHTML =
-        '<div class="p-id"><span class="avatar" style="background:'+avatarColor(s.name)+'">'+esc(initial(s.name))+'</span>'+
-        '<span><span class="name">'+esc(s.name)+'</span>'+
-        '<span class="meta">שילם '+ (s.paidText||fmtNIS(s.paid)) +' · חלקו '+ (s.shareText||fmtNIS(s.share)) +'</span></span></div>'+
+        '<div><div class="name">'+esc(s.name)+'</div>'+
+        '<div class="meta">'+ paidWord(s.name)+' '+ (s.paidText||fmtNIS(s.paid)) +' · '+ shareWord(s.name)+' '+ (s.shareText||fmtNIS(s.share)) +'</div></div>'+
         '<div class="badge '+cls+'">'+label+'</div>';
       box.appendChild(row);
     });
@@ -553,9 +552,6 @@ function formatRaw(a,c){
   return (c||'') + n.toLocaleString('he-IL');
 }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m];}); }
-function initial(n){ return (String(n||'?').trim().charAt(0))||'?'; }
-var AV_COLORS={ 'רועי':'#1556d6', 'אילנה':'#c0392b', 'לואיז ויעקב':'#1e8e4f' };
-function avatarColor(n){ if(AV_COLORS[n]) return AV_COLORS[n]; var h=0; for(var i=0;i<n.length;i++) h=(h*31+n.charCodeAt(i))%360; return 'hsl('+h+',55%,45%)'; }
 function skel(n){ var s=''; for(var i=0;i<(n||3);i++){ s+='<div class="skel-row"><div class="skel" style="width:'+(48+i*14)+'%"></div></div>'; } return s; }
 function applyTheme(t){
   document.documentElement.setAttribute('data-theme', t);
@@ -723,8 +719,8 @@ function setCountdown(){
   var dep=new Date(2026,5,23), ret=new Date(2026,6,16);
   var now=new Date(), t0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
   var d=Math.round((dep-t0)/86400000);
-  if(d>0){ el.textContent='✈️ עוד '+d+' '+(d===1?'יום':'ימים')+' לטיול לקוריאה!'; el.style.display=''; }
-  else if(t0<=ret){ el.textContent='🇰🇷 יום '+(Math.round((t0-dep)/86400000)+1)+' לטיול — תהנו!'; el.style.display=''; }
+  if(d>0){ el.innerHTML='<span class="cd-num">'+d+'</span><span class="cd-label">'+(d===1?'יום':'ימים')+' לטיסה ✈️</span>'; el.style.display=''; }
+  else if(t0<=ret){ el.innerHTML='<span class="cd-label" style="font-size:17px">🇰🇷 יום '+(Math.round((t0-dep)/86400000)+1)+' לטיול — תהנו!</span>'; el.style.display=''; }
   else { el.style.display='none'; }
 }
 
