@@ -132,6 +132,22 @@
   .grp-h .ar{color:var(--muted); transition:transform .2s; font-size:13px}
   .grp:not([open]) .grp-h .ar{transform:rotate(-90deg)}
   .grp-body{padding:2px 14px 8px}
+
+  /* tappable recent rows + edit modal */
+  .exp.tap{cursor:pointer}
+  .exp.tap:active{background:#f7f9fd}
+  .hint{font-size:12px; color:var(--muted); margin:-6px 0 8px}
+  .modal{position:fixed; inset:0; background:rgba(16,33,62,.45); z-index:60; display:flex; align-items:flex-end; justify-content:center}
+  .modal.hidden{display:none}
+  .modal-card{background:#fff; width:100%; max-width:560px; border-radius:18px 18px 0 0; padding:18px calc(env(safe-area-inset-bottom) + 18px); max-height:92vh; overflow:auto}
+  .modal-card h2{margin:0 0 6px; font-size:17px}
+  .btn.danger{background:rgba(192,57,43,.1); color:var(--red); margin-top:10px}
+  /* currency converter */
+  .conv{display:flex; gap:10px; align-items:flex-end}
+  .conv > div{flex:1}
+  .conv .swap{font-size:20px; color:var(--muted); padding-bottom:12px}
+  /* countdown + essentials */
+  .countdown{background:linear-gradient(135deg,var(--blue),var(--blue2)); color:#fff; font-weight:800; font-size:16px; text-align:center}
 </style>
 </head>
 <body>
@@ -182,13 +198,25 @@
     </div>
 
     <div class="card">
+      <h2>ממיר מטבע ₩ ⇄ ₪</h2>
+      <div class="conv">
+        <div><label style="margin-top:0">₩ וון</label><input id="convKrw" type="number" inputmode="decimal" placeholder="0"></div>
+        <span class="swap">⇄</span>
+        <div><label style="margin-top:0">₪ שקל</label><input id="convNis" type="number" inputmode="decimal" placeholder="0"></div>
+      </div>
+      <div class="small" id="convRate" style="margin-top:8px">—</div>
+    </div>
+
+    <div class="card">
       <h2>הוצאות אחרונות</h2>
+      <div class="hint">הקש על הוצאה כדי לערוך או למחוק</div>
       <div id="recent"><div class="empty">אין עדיין הוצאות</div></div>
     </div>
   </section>
 
   <!-- ===== VIEW: INFO (flights + lodging) ===== -->
   <section id="viewInfo" class="hidden">
+    <div class="card countdown" id="countdownCard" style="display:none"></div>
     <div class="card">
       <h2>✈️ טיסות</h2>
       <div id="flights"><div class="empty">טוען…</div></div>
@@ -196,6 +224,13 @@
     <div class="card">
       <h2>🏨 לינה</h2>
       <div id="lodging"><div class="empty">טוען…</div></div>
+    </div>
+    <div class="card">
+      <h2>🆘 חירום ומידע בקוריאה</h2>
+      <div class="lg-row"><a class="lg-link" href="tel:112">🚓 משטרה — 112</a></div>
+      <div class="lg-row"><a class="lg-link" href="tel:119">🚑 אמבולנס / כבאות — 119</a></div>
+      <div class="lg-row"><a class="lg-link" href="tel:1330">ℹ️ קו תיירות (24/7, אנגלית) — 1330</a></div>
+      <div class="small" style="margin-top:8px">חשמל 220V (תקע C/F) · מטבע ₩ וון · אזור זמן +9</div>
     </div>
   </section>
 
@@ -210,8 +245,9 @@
         הדבק כאן את הקישור שקיבלת בעת פרסום ה‑Web App. הקישור נשמר במכשיר הזה בלבד.
       </p>
       <button class="btn secondary" id="reloadBtn">טען מחדש את הנתונים</button>
+      <button class="btn secondary" id="shareBtn">📤 שתף את האפליקציה</button>
     </div>
-    <p class="small center">חישובי כספים לקוריאה · גרסה 1.0</p>
+    <p class="small center">חישובי כספים לקוריאה · גרסה 1.1</p>
   </section>
 
 </div>
@@ -224,6 +260,30 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- ===== EDIT EXPENSE MODAL ===== -->
+<div class="modal hidden" id="editModal">
+  <div class="modal-card">
+    <h2>עריכת הוצאה</h2>
+    <label>מתי?</label>
+    <input id="eDate" type="date">
+    <label>מי שילם?</label>
+    <select id="eWho"></select>
+    <label>על מה?</label>
+    <input id="eWhat" type="text">
+    <label>כמה?</label>
+    <input id="eAmount" type="number" inputmode="decimal" min="0" step="any">
+    <label>מטבע</label>
+    <div class="seg" id="eCurSeg">
+      <button type="button" data-cur="₩">₩</button>
+      <button type="button" data-cur="$">$</button>
+      <button type="button" data-cur="₪">₪</button>
+    </div>
+    <button class="btn" id="eSaveBtn">שמור שינויים</button>
+    <button class="btn danger" id="eDeleteBtn">מחק הוצאה</button>
+    <button class="btn secondary" id="eCancelBtn">ביטול</button>
+  </div>
+</div>
 
 <script>
 /* ============================================================
@@ -339,8 +399,24 @@ function loadData(){
     .then(function(d){
       if(!d || d.ok===false){ throw new Error(d && d.error || 'bad response'); }
       lastData=d; setStatus('live'); render(d);
+      try{ localStorage.setItem('cachedData', JSON.stringify(d)); }catch(e){}
     })
-    .catch(function(e){ setStatus('err'); });
+    .catch(function(e){
+      setStatus('err');
+      if(!lastData){ try{ var c=JSON.parse(localStorage.getItem('cachedData')||'null'); if(c){ lastData=c; render(c); } }catch(e2){} }
+    });
+}
+
+/* POST an action (add/edit/delete) and refresh from the response */
+function post(body){
+  return fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(!d || d.ok===false){ throw new Error(d && d.error || 'bad response'); }
+      lastData=d; render(d); setStatus('live');
+      try{ localStorage.setItem('cachedData', JSON.stringify(d)); }catch(e){}
+      return d;
+    });
 }
 
 function addExpense(){
@@ -362,6 +438,7 @@ function addExpense(){
   .then(function(d){
     if(!d || d.ok===false){ throw new Error(d && d.error || 'bad response'); }
     lastData=d; render(d); setStatus('live');
+    try{ localStorage.setItem('cachedData', JSON.stringify(d)); }catch(e){}
     $('amount').value=''; $('what').value=''; setSelDate(todayStr()); closeCal();
     toast('נוסף ✓');
   })
@@ -373,6 +450,15 @@ function addExpense(){
 function render(d){
   $('tripTotal').textContent = d.totalText || fmtNIS(d.total);
   renderInfo(d);
+
+  // ₩→₪ rate derived from any ₩ expense (matches the sheet's own conversion)
+  if(d.expenses){
+    for(var ei=0; ei<d.expenses.length; ei++){
+      var x0=d.expenses[ei];
+      if(x0.currency==='₩' && Number(x0.amount)>0 && Number(x0.nis)>0){ window.krwRate=Number(x0.nis)/Number(x0.amount); break; }
+    }
+  }
+  updateConvRate();
 
   // payer dropdown
   var sel=$('who'); var cur=sel.value;
@@ -409,12 +495,13 @@ function render(d){
   else{
     rec.innerHTML='';
     d.expenses.slice().reverse().forEach(function(x){
-      var el=document.createElement('div'); el.className='exp';
+      var el=document.createElement('div'); el.className='exp tap';
       el.innerHTML =
         '<div><div class="who">'+esc(x.who)+'</div>'+
         '<div class="what">'+esc(x.what||'')+ (x.date?' · '+esc(x.date):'') +'</div></div>'+
         '<div class="amt">'+ (x.nisText||fmtNIS(x.nis)) +
           '<small>'+ formatRaw(x.amount,x.currency) +'</small></div>';
+      el.onclick=function(){ openEdit(x); };
       rec.appendChild(el);
     });
   }
@@ -523,7 +610,8 @@ async function updateFlightStatuses(){
   if(_fsBusy || !API_URL) return; _fsBusy=true;
   try{
     var map={};
-    try{ var r=await fetch(API_URL+'?action=flights'); var j=await r.json(); map=(j&&j.flightStatus)||{}; }catch(e){ map={}; }
+    try{ var r=await fetch(API_URL+'?action=flights'); var j=await r.json(); map=(j&&j.flightStatus)||{}; localStorage.setItem('cachedFlights',JSON.stringify(map)); }
+    catch(e){ try{ map=JSON.parse(localStorage.getItem('cachedFlights')||'{}'); }catch(e2){ map={}; } }
     [].slice.call(document.querySelectorAll('#flights .fl-status')).forEach(function(el){
       var k=(el.dataset.num||'').replace(/\s+/g,'')+'|'+(el.dataset.date||'');
       if(map[k]) applyBadge(el,map[k]);
@@ -534,6 +622,61 @@ async function updateFlightStatuses(){
 
 function showNeedsSetup(){
   $('people').innerHTML='<div class="empty">עדיין לא מחובר.<br>עבור ל⚙️ <b>הגדרות</b> והדבק את כתובת ה‑Web App.</div>';
+}
+
+/* ---------- currency converter (₩ ⇄ ₪, rate from the sheet's own data) ---------- */
+function updateConvRate(){
+  var r=window.krwRate||0;
+  $('convRate').textContent = r ? ('שער נוכחי: 1,000 ₩ ≈ ' + (1000*r).toFixed(2) + ' ₪') : 'השער יתעדכן לאחר טעינת הנתונים';
+  if(document.activeElement!==$('convNis')) convFromKrw();
+}
+function convFromKrw(){ var v=parseFloat($('convKrw').value), r=window.krwRate||0; $('convNis').value=(v>0&&r)?(v*r).toFixed(2):''; }
+function convFromNis(){ var v=parseFloat($('convNis').value), r=window.krwRate||0; $('convKrw').value=(v>0&&r)?Math.round(v/r):''; }
+
+/* ---------- edit / delete an expense ---------- */
+var editRow=null, eCur='₪';
+function openEdit(x){
+  editRow=x.row;
+  var sel=$('eWho'); sel.innerHTML='';
+  ((lastData&&lastData.payers)||[]).forEach(function(p){ var o=document.createElement('option'); o.value=p; o.textContent=p; sel.appendChild(o); });
+  sel.value=x.who;
+  $('eWhat').value=x.what||'';
+  $('eAmount').value=x.amount;
+  $('eDate').value=toYMD(x.date)||todayStr();
+  eCur=x.currency||'₪';
+  document.querySelectorAll('#eCurSeg button').forEach(function(b){ b.classList.toggle('on', b.dataset.cur===eCur); });
+  $('editModal').classList.remove('hidden');
+}
+function closeEdit(){ $('editModal').classList.add('hidden'); editRow=null; }
+function saveEdit(){
+  if(editRow==null) return;
+  var amount=parseFloat($('eAmount').value);
+  if(!(amount>0)){ toast('סכום לא תקין',true); return; }
+  var btn=$('eSaveBtn'); btn.disabled=true; btn.textContent='שומר…';
+  post({action:'edit', row:editRow, who:$('eWho').value, what:$('eWhat').value.trim(), amount:amount, currency:eCur, date:$('eDate').value||todayStr()})
+    .then(function(){ toast('עודכן ✓'); closeEdit(); })
+    .catch(function(){ toast('שגיאה — נסה שוב',true); })
+    .finally(function(){ btn.disabled=false; btn.textContent='שמור שינויים'; });
+}
+function deleteExpenseRow(){
+  if(editRow==null) return;
+  if(!confirm('למחוק את ההוצאה?')) return;
+  var btn=$('eDeleteBtn'); btn.disabled=true; btn.textContent='מוחק…';
+  post({action:'delete', row:editRow})
+    .then(function(){ toast('נמחק ✓'); closeEdit(); })
+    .catch(function(){ toast('שגיאה — נסה שוב',true); })
+    .finally(function(){ btn.disabled=false; btn.textContent='מחק הוצאה'; });
+}
+
+/* ---------- trip countdown ---------- */
+function setCountdown(){
+  var el=$('countdownCard'); if(!el) return;
+  var dep=new Date(2026,5,23), ret=new Date(2026,6,16);
+  var now=new Date(), t0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  var d=Math.round((dep-t0)/86400000);
+  if(d>0){ el.textContent='✈️ עוד '+d+' '+(d===1?'יום':'ימים')+' לטיול לקוריאה!'; el.style.display=''; }
+  else if(t0<=ret){ el.textContent='🇰🇷 יום '+(Math.round((t0-dep)/86400000)+1)+' לטיול — תהנו!'; el.style.display=''; }
+  else { el.style.display='none'; }
 }
 
 /* ---------- settings ---------- */
@@ -549,6 +692,27 @@ $('reloadBtn').onclick=loadData;
 $('refreshBtn').onclick=loadData;
 $('addBtn').onclick=addExpense;
 
+/* converter */
+$('convKrw').addEventListener('input', convFromKrw);
+$('convNis').addEventListener('input', convFromNis);
+
+/* edit modal */
+$('eSaveBtn').onclick=saveEdit;
+$('eDeleteBtn').onclick=deleteExpenseRow;
+$('eCancelBtn').onclick=closeEdit;
+$('editModal').onclick=function(e){ if(e.target===$('editModal')) closeEdit(); };
+document.querySelectorAll('#eCurSeg button').forEach(function(b){
+  b.onclick=function(){ document.querySelectorAll('#eCurSeg button').forEach(function(x){x.classList.remove('on');}); b.classList.add('on'); eCur=b.dataset.cur; };
+});
+
+/* share */
+$('shareBtn').onclick=function(){
+  var url=location.href.split('?')[0].split('#')[0];
+  if(navigator.share){ navigator.share({title:'חישובי כספים לקוריאה',url:url}).catch(function(){}); }
+  else if(navigator.clipboard){ navigator.clipboard.writeText(url).then(function(){ toast('הקישור הועתק ✓'); }); }
+  else { toast(url); }
+};
+
 /* ---------- polling ---------- */
 function startPolling(){
   if(pollTimer) clearInterval(pollTimer);
@@ -558,7 +722,9 @@ document.addEventListener('visibilitychange',function(){ if(document.visibilityS
 
 /* ---------- boot ---------- */
 setSelDate(todayStr());
+setCountdown();
 if(API_URL){ $('apiUrl').value=API_URL; }
+try{ var _c=JSON.parse(localStorage.getItem('cachedData')||'null'); if(_c){ lastData=_c; render(_c); } }catch(e){}  // show last data instantly / offline
 loadData();
 startPolling();
 
