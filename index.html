@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0b3d91">
-<title>חישובי כספים לקוריאה</title>
+<title>אתיפשונים נוסעים לקוראה!</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>
@@ -148,11 +148,18 @@
   .conv .swap{font-size:20px; color:var(--muted); padding-bottom:12px}
   /* countdown + essentials */
   .countdown{background:linear-gradient(135deg,var(--blue),var(--blue2)); color:#fff; font-weight:800; font-size:16px; text-align:center}
+  /* Israel clock + phrases (שימושי tab) */
+  .clock{font-size:34px; font-weight:800; color:var(--blue); text-align:center; font-variant-numeric:tabular-nums; letter-spacing:1px; direction:ltr}
+  .ph{padding:9px 0; border-top:1px solid var(--line)}
+  .ph:first-child{border-top:none}
+  .ph-he{font-weight:700; font-size:15px}
+  .ph-ko{font-size:13px; color:var(--muted); margin-top:2px}
+  .ph-rom{color:var(--blue2)}
 </style>
 </head>
 <body>
 <header>
-  <h1>🇰🇷 חישובי כספים לקוריאה</h1>
+  <h1>🇰🇷 אתיפשונים נוסעים לקוראה!</h1>
   <div class="sub"><span id="statusDot" class="dot"></span><span id="statusText">מתחבר…</span></div>
 </header>
 
@@ -171,7 +178,7 @@
   </section>
 
   <!-- ===== VIEW: ADD ===== -->
-  <section id="viewAdd">
+  <section id="viewAdd" class="hidden">
     <div class="card">
       <h2>הוספת הוצאה</h2>
       <label>מתי?</label>
@@ -198,24 +205,14 @@
     </div>
 
     <div class="card">
-      <h2>ממיר מטבע ₩ ⇄ ₪</h2>
-      <div class="conv">
-        <div><label style="margin-top:0">₩ וון</label><input id="convKrw" type="number" inputmode="decimal" placeholder="0"></div>
-        <span class="swap">⇄</span>
-        <div><label style="margin-top:0">₪ שקל</label><input id="convNis" type="number" inputmode="decimal" placeholder="0"></div>
-      </div>
-      <div class="small" id="convRate" style="margin-top:8px">—</div>
-    </div>
-
-    <div class="card">
       <h2>הוצאות אחרונות</h2>
       <div class="hint">הקש על הוצאה כדי לערוך או למחוק</div>
       <div id="recent"><div class="empty">אין עדיין הוצאות</div></div>
     </div>
   </section>
 
-  <!-- ===== VIEW: INFO (flights + lodging) ===== -->
-  <section id="viewInfo" class="hidden">
+  <!-- ===== VIEW: TRIP INFO (flights + lodging) — default ===== -->
+  <section id="viewInfo">
     <div class="card countdown" id="countdownCard" style="display:none"></div>
     <div class="card">
       <h2>✈️ טיסות</h2>
@@ -225,38 +222,44 @@
       <h2>🏨 לינה</h2>
       <div id="lodging"><div class="empty">טוען…</div></div>
     </div>
+  </section>
+
+  <!-- ===== VIEW: GENERAL (שימושי) ===== -->
+  <section id="viewGeneral" class="hidden">
     <div class="card">
-      <h2>🆘 חירום ומידע בקוריאה</h2>
+      <h2>🕐 השעה בישראל</h2>
+      <div id="ilClock" class="clock">--:--:--</div>
+    </div>
+    <div class="card">
+      <h2>ממיר מטבע ₩ ⇄ ₪</h2>
+      <div class="conv">
+        <div><label style="margin-top:0">₩ וון</label><input id="convKrw" type="number" inputmode="decimal" placeholder="0"></div>
+        <span class="swap">⇄</span>
+        <div><label style="margin-top:0">₪ שקל</label><input id="convNis" type="number" inputmode="decimal" placeholder="0"></div>
+      </div>
+      <div class="small" id="convRate" style="margin-top:8px">—</div>
+    </div>
+    <div class="card">
+      <h2>🆘 טלפונים שימושיים</h2>
       <div class="lg-row"><a class="lg-link" href="tel:112">🚓 משטרה — 112</a></div>
       <div class="lg-row"><a class="lg-link" href="tel:119">🚑 אמבולנס / כבאות — 119</a></div>
       <div class="lg-row"><a class="lg-link" href="tel:1330">ℹ️ קו תיירות (24/7, אנגלית) — 1330</a></div>
-      <div class="small" style="margin-top:8px">חשמל 220V (תקע C/F) · מטבע ₩ וון · אזור זמן +9</div>
     </div>
+    <div class="card">
+      <h2>🗣️ ביטויים שימושיים</h2>
+      <div id="phrases"></div>
+    </div>
+    <button class="btn secondary" id="shareBtn">📤 שתף את האפליקציה</button>
   </section>
 
-  <!-- ===== VIEW: SETTINGS ===== -->
-  <section id="viewSettings" class="hidden">
-    <div class="card">
-      <h2>הגדרות</h2>
-      <label>כתובת ה‑Web App (מ‑Google Apps Script)</label>
-      <input id="apiUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec">
-      <button class="btn" id="saveUrlBtn">שמור וחבר</button>
-      <p class="small" style="margin-top:14px">
-        הדבק כאן את הקישור שקיבלת בעת פרסום ה‑Web App. הקישור נשמר במכשיר הזה בלבד.
-      </p>
-      <button class="btn secondary" id="reloadBtn">טען מחדש את הנתונים</button>
-      <button class="btn secondary" id="shareBtn">📤 שתף את האפליקציה</button>
-    </div>
-    <p class="small center">חישובי כספים לקוריאה · גרסה 1.1</p>
-  </section>
 
 </div>
 
 <div class="tabbar">
+  <button data-view="viewInfo" class="on"><span class="ic">✈️</span>טיסות ולינה</button>
+  <button data-view="viewGeneral"><span class="ic">🧭</span>שימושי</button>
+  <button data-view="viewAdd"><span class="ic">➕</span>הוספה</button>
   <button data-view="viewSummary"><span class="ic">📊</span>סיכום</button>
-  <button data-view="viewAdd" class="on"><span class="ic">➕</span>הוספה</button>
-  <button data-view="viewInfo"><span class="ic">✈️</span>מידע</button>
-  <button data-view="viewSettings"><span class="ic">⚙️</span>הגדרות</button>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -302,6 +305,10 @@ var calY, calM;              // month currently shown in the calendar
 var HE_MONTHS = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
 var HE_WD = ['א','ב','ג','ד','ה','ו','ש'];   // Sun..Sat
 var MON3 = {Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
+// gender/number agreement for settlement labels
+var GENDER = { 'רועי':'m', 'אילנה':'f', 'לואיז ויעקב':'p' };
+function needWord(name){ var g=GENDER[name]||'m'; return g==='f'?'צריכה':g==='p'?'צריכים':'צריך'; }
+function settledWord(name){ var g=GENDER[name]||'m'; return g==='f'?'מאוזנת':g==='p'?'מאוזנים':'מאוזן'; }
 
 /* ---------- helpers ---------- */
 function $(id){ return document.getElementById(id); }
@@ -328,7 +335,7 @@ document.querySelectorAll('.tabbar button').forEach(function(b){
   b.onclick=function(){
     document.querySelectorAll('.tabbar button').forEach(function(x){x.classList.remove('on');});
     b.classList.add('on');
-    ['viewSummary','viewAdd','viewInfo','viewSettings'].forEach(function(v){ $(v).classList.add('hidden'); });
+    ['viewInfo','viewGeneral','viewAdd','viewSummary'].forEach(function(v){ $(v).classList.add('hidden'); });
     $(b.dataset.view).classList.remove('hidden');
     if(b.dataset.view==='viewInfo') updateFlightStatuses();
   };
@@ -477,9 +484,9 @@ function render(d){
     box.innerHTML='';
     d.summary.forEach(function(s){
       var rem = s.remaining;
-      var cls='settled', label='מאוזן';
-      if(rem!==null && rem>0.5){ cls='owes'; label='צריך לשלם ' + fmtNIS(rem); }
-      else if(rem!==null && rem<-0.5){ cls='gets'; label='מקבל בחזרה ' + fmtNIS(rem); }
+      var cls='settled', label=settledWord(s.name);
+      if(rem!==null && rem>0.5){ cls='owes'; label=needWord(s.name)+' לשלם ' + fmtNIS(rem); }
+      else if(rem!==null && rem<-0.5){ cls='gets'; label=needWord(s.name)+' לקבל ' + fmtNIS(rem); }
       var row=document.createElement('div'); row.className='person';
       row.innerHTML =
         '<div><div class="name">'+esc(s.name)+'</div>'+
@@ -679,16 +686,32 @@ function setCountdown(){
   else { el.style.display='none'; }
 }
 
-/* ---------- settings ---------- */
-$('saveUrlBtn').onclick=function(){
-  var v=$('apiUrl').value.trim();
-  if(!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec/.test(v)){
-    toast('הכתובת צריכה להיגמר ב‑/exec',true); return;
-  }
-  localStorage.setItem('apiUrl', v); API_URL=v;
-  toast('נשמר ✓'); setStatus('…'); loadData(); startPolling();
-};
-$('reloadBtn').onclick=loadData;
+/* ---------- Israel clock + Korean phrases (שימושי) ---------- */
+function tickClock(){
+  var el=$('ilClock'); if(!el) return;
+  try{ el.textContent=new Date().toLocaleTimeString('he-IL',{timeZone:'Asia/Jerusalem',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}); }catch(e){ el.textContent='—'; }
+}
+var PHRASES=[
+  ['שלום / היי','안녕하세요','an-nyong-ha-se-yo'],
+  ['תודה','감사합니다','gam-sa-ham-ni-da'],
+  ['כן','네','ne'],
+  ['לא','아니요','a-ni-yo'],
+  ['סליחה','죄송합니다','jwe-song-ham-ni-da'],
+  ['כמה זה עולה?','얼마예요?','ol-ma-ye-yo'],
+  ['איפה השירותים?','화장실이 어디예요?','hwa-jang-shil-i o-di-ye-yo'],
+  ['טעים!','맛있어요','ma-shi-sso-yo'],
+  ['סליחה / הנה (למלצר)','여기요','yo-gi-yo'],
+  ['עזרה!','도와주세요','do-wa-ju-se-yo']
+];
+function renderPhrases(){
+  var el=$('phrases'); if(!el) return;
+  el.innerHTML=PHRASES.map(function(p){
+    return '<div class="ph"><div class="ph-he">'+esc(p[0])+'</div>'+
+           '<div class="ph-ko"><span class="ltr">'+esc(p[1])+'</span> · <span class="ph-rom ltr">'+esc(p[2])+'</span></div></div>';
+  }).join('');
+}
+
+/* ---------- buttons ---------- */
 $('refreshBtn').onclick=loadData;
 $('addBtn').onclick=addExpense;
 
@@ -723,7 +746,8 @@ document.addEventListener('visibilitychange',function(){ if(document.visibilityS
 /* ---------- boot ---------- */
 setSelDate(todayStr());
 setCountdown();
-if(API_URL){ $('apiUrl').value=API_URL; }
+renderPhrases();
+tickClock(); setInterval(tickClock, 1000);
 try{ var _c=JSON.parse(localStorage.getItem('cachedData')||'null'); if(_c){ lastData=_c; render(_c); } }catch(e){}  // show last data instantly / offline
 loadData();
 startPolling();
