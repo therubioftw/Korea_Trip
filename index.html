@@ -7,11 +7,21 @@
 <title>אתיפשונים נוסעים לקוראה!</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
+<script>try{var _t=localStorage.getItem('theme');if(_t)document.documentElement.setAttribute('data-theme',_t);}catch(e){}</script>
 <style>
   :root{
     --blue:#0b3d91; --blue2:#1556d6; --red:#c0392b; --green:#1e8e4f;
     --bg:#f4f6fb; --card:#ffffff; --ink:#16213e; --muted:#6b7488; --line:#e6e9f2;
+    --field:#ffffff; --soft:#eef0f5; --soft2:#f7f9fd; --notebg:#eef2fb;
+    --shadow:0 2px 10px rgba(20,33,62,.06);
   }
+  :root[data-theme="dark"]{
+    --blue:#3b74ff; --blue2:#7aa2ff; --red:#ff6f63; --green:#46cf90;
+    --bg:#0f1522; --card:#1a2233; --ink:#e9edf6; --muted:#9aa6bd; --line:#2b3548;
+    --field:#131c2c; --soft:#232d40; --soft2:#1e2738; --notebg:#1d2842;
+    --shadow:0 2px 14px rgba(0,0,0,.4);
+  }
+  html{transition:background .2s ease}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0}
   body{
@@ -32,7 +42,7 @@
   .dot.err{background:#ff8a8a}
   .wrap{max-width:560px; margin:0 auto; padding:16px}
 
-  .card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; margin-bottom:14px; box-shadow:0 1px 3px rgba(20,33,62,.05)}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:18px; padding:18px; margin-bottom:16px; box-shadow:var(--shadow)}
   .card h2{margin:0 0 12px; font-size:15px; color:var(--muted); font-weight:600}
 
   .total{display:flex; align-items:baseline; justify-content:space-between}
@@ -50,17 +60,17 @@
   label{display:block; font-size:13px; color:var(--muted); margin:10px 0 6px}
   select,input,textarea{
     width:100%; font-size:16px; padding:13px 14px; border:1.5px solid var(--line);
-    border-radius:12px; background:#fff; color:var(--ink); font-family:inherit;
+    border-radius:12px; background:var(--field); color:var(--ink); font-family:inherit;
   }
   select:focus,input:focus,textarea:focus{outline:none; border-color:var(--blue2)}
   .row2{display:grid; grid-template-columns:1fr 110px; gap:10px}
   .seg{display:flex; gap:8px; margin-top:6px}
-  .seg button{flex:1; padding:12px; border:1.5px solid var(--line); background:#fff; border-radius:12px; font-size:16px; font-weight:700; color:var(--ink)}
+  .seg button{flex:1; padding:12px; border:1.5px solid var(--line); background:var(--field); border-radius:12px; font-size:16px; font-weight:700; color:var(--ink)}
   .seg button.on{background:var(--blue); color:#fff; border-color:var(--blue)}
 
   .btn{width:100%; margin-top:16px; padding:15px; border:none; border-radius:14px; background:var(--blue); color:#fff; font-size:17px; font-weight:800}
   .btn:disabled{opacity:.5}
-  .btn.secondary{background:#eef0f5; color:var(--ink)}
+  .btn.secondary{background:var(--soft); color:var(--ink)}
 
   .exp{display:flex; align-items:center; justify-content:space-between; padding:11px 0; border-top:1px solid var(--line); gap:10px}
   .exp:first-of-type{border-top:none}
@@ -74,7 +84,7 @@
   .toast.show{opacity:1}
   .toast.bad{background:var(--red)}
 
-  .tabbar{position:fixed; bottom:0; left:0; right:0; background:#fff; border-top:1px solid var(--line); display:flex; padding:8px 8px calc(env(safe-area-inset-bottom) + 8px); z-index:20}
+  .tabbar{position:fixed; bottom:0; left:0; right:0; background:var(--card); border-top:1px solid var(--line); display:flex; padding:8px 8px calc(env(safe-area-inset-bottom) + 8px); z-index:20}
   .tabbar button{flex:1; background:none; border:none; padding:8px; font-size:12px; color:var(--muted); font-weight:600; display:flex; flex-direction:column; align-items:center; gap:3px}
   .tabbar button.on{color:var(--blue)}
   .tabbar .ic{font-size:20px}
@@ -88,14 +98,14 @@
   .datefield{display:inline-flex; align-items:center; gap:8px; border:none; background:none; padding:4px 0 2px; margin-top:2px; font-size:19px; font-weight:700; color:var(--ink); cursor:pointer; text-align:right}
   .datefield #dateText{border-bottom:1.5px dashed var(--blue2); padding-bottom:2px}
   .datefield .cal-ic{font-size:14px; color:var(--blue2)}
-  .cal{margin-top:8px; border:1.5px solid var(--line); border-radius:14px; padding:12px; background:#fff; box-shadow:0 6px 20px rgba(20,33,62,.10)}
+  .cal{margin-top:8px; border:1.5px solid var(--line); border-radius:14px; padding:12px; background:var(--card); box-shadow:0 6px 20px rgba(0,0,0,.18)}
   .cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px}
   .cal-head .m{font-weight:800; font-size:15px}
-  .cal-nav{background:#eef0f5; border:none; width:36px; height:36px; border-radius:10px; font-size:20px; line-height:1; color:var(--ink); cursor:pointer}
+  .cal-nav{background:var(--soft); border:none; width:36px; height:36px; border-radius:10px; font-size:20px; line-height:1; color:var(--ink); cursor:pointer}
   .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:3px; text-align:center}
   .cal-grid .wd{font-size:11px; color:var(--muted); padding:4px 0; font-weight:700}
   .cal-grid .d{padding:9px 0; border-radius:10px; cursor:pointer; font-size:14px}
-  .cal-grid .d:active{background:#e3e8f5}
+  .cal-grid .d:active{background:var(--soft)}
   .cal-grid .d.sel{background:var(--blue); color:#fff; font-weight:800}
   .cal-grid .d.today{box-shadow:inset 0 0 0 1.5px var(--blue2)}
   .cal-grid .d.empty{visibility:hidden; cursor:default}
@@ -107,7 +117,7 @@
   .fl-codeRow{display:flex; align-items:center; justify-content:space-between; margin-bottom:5px}
   .fl-code{font-size:12px; font-weight:800; color:var(--blue2); letter-spacing:.5px}
   .fl-status{font-size:11px; font-weight:800; padding:3px 9px; border-radius:20px}
-  .fs-sched{background:#eef0f5; color:var(--muted)}
+  .fs-sched{background:var(--soft); color:var(--muted)}
   .fs-live{background:rgba(21,86,214,.12); color:var(--blue2)}
   .fs-ok{background:rgba(30,142,79,.12); color:var(--green)}
   .fs-bad{background:rgba(192,57,43,.12); color:var(--red)}
@@ -117,7 +127,7 @@
   .fl-pt .p{font-size:12px; color:var(--muted); margin-top:1px}
   .fl-ar{color:var(--blue2); font-size:18px}
   .fl-meta{font-size:12px; color:var(--muted); margin-top:7px}
-  .fl-note{font-size:12px; color:var(--blue); background:#eef2fb; border-radius:8px; padding:5px 9px; margin-top:6px; display:inline-block}
+  .fl-note{font-size:12px; color:var(--blue2); background:var(--notebg); border-radius:8px; padding:5px 9px; margin-top:6px; display:inline-block}
   .lg-name{font-size:17px; font-weight:800; margin-bottom:8px}
   .lg-row{margin:5px 0; font-size:14px}
   .lg-row .k{color:var(--muted); font-size:12px}
@@ -127,7 +137,7 @@
   /* collapsible flight groups */
   .grp{border:1px solid var(--line); border-radius:12px; margin-bottom:10px; overflow:hidden}
   .grp:last-child{margin-bottom:0}
-  .grp-h{list-style:none; cursor:pointer; padding:11px 14px; font-weight:800; font-size:15px; background:#f7f9fd; display:flex; align-items:center; justify-content:space-between}
+  .grp-h{list-style:none; cursor:pointer; padding:11px 14px; font-weight:800; font-size:15px; background:var(--soft2); display:flex; align-items:center; justify-content:space-between}
   .grp-h::-webkit-details-marker{display:none}
   .grp-h .ar{color:var(--muted); transition:transform .2s; font-size:13px}
   .grp:not([open]) .grp-h .ar{transform:rotate(-90deg)}
@@ -135,11 +145,11 @@
 
   /* tappable recent rows + edit modal */
   .exp.tap{cursor:pointer}
-  .exp.tap:active{background:#f7f9fd}
+  .exp.tap:active{background:var(--soft2)}
   .hint{font-size:12px; color:var(--muted); margin:-6px 0 8px}
   .modal{position:fixed; inset:0; background:rgba(16,33,62,.45); z-index:60; display:flex; align-items:flex-end; justify-content:center}
   .modal.hidden{display:none}
-  .modal-card{background:#fff; width:100%; max-width:560px; border-radius:18px 18px 0 0; padding:18px calc(env(safe-area-inset-bottom) + 18px); max-height:92vh; overflow:auto}
+  .modal-card{background:var(--card); width:100%; max-width:560px; border-radius:18px 18px 0 0; padding:18px calc(env(safe-area-inset-bottom) + 18px); max-height:92vh; overflow:auto; animation:slideUp .25s ease}
   .modal-card h2{margin:0 0 6px; font-size:17px}
   .btn.danger{background:rgba(192,57,43,.1); color:var(--red); margin-top:10px}
   /* currency converter */
@@ -155,10 +165,30 @@
   .ph-he{font-weight:700; font-size:15px}
   .ph-ko{font-size:13px; color:var(--muted); margin-top:2px}
   .ph-rom{color:var(--blue2)}
+
+  /* theme toggle */
+  .theme-btn{position:absolute; top:calc(env(safe-area-inset-top) + 14px); left:16px; background:rgba(255,255,255,.18); border:none; color:#fff; width:36px; height:36px; border-radius:10px; font-size:17px; cursor:pointer}
+  /* summary avatars */
+  .p-id{display:flex; align-items:center; gap:11px}
+  .avatar{width:40px; height:40px; border-radius:50%; color:#fff; font-weight:800; font-size:17px; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0}
+  .person .name, .person .meta{display:block}
+  /* active tab accent */
+  .tabbar button{position:relative; transition:color .15s}
+  .tabbar button.on::before{content:''; position:absolute; top:-8px; left:50%; transform:translateX(-50%); width:26px; height:3px; border-radius:3px; background:var(--blue2)}
+  /* animations */
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+  @keyframes slideUp{from{transform:translateY(40px)} to{transform:none}}
+  .view-anim{animation:fadeIn .22s ease}
+  /* loading skeletons */
+  .skel-row{padding:13px 0; border-top:1px solid var(--line)}
+  .skel-row:first-child{border-top:none}
+  .skel{height:14px; border-radius:7px; background:linear-gradient(90deg,var(--soft) 25%,var(--soft2) 37%,var(--soft) 63%); background-size:400% 100%; animation:shimmer 1.4s infinite}
+  @keyframes shimmer{0%{background-position:100% 0} 100%{background-position:-100% 0}}
 </style>
 </head>
 <body>
 <header>
+  <button id="themeBtn" class="theme-btn" aria-label="החלף מצב תצוגה">🌙</button>
   <h1>🇰🇷 אתיפשונים נוסעים לקוראה!</h1>
   <div class="sub"><span id="statusDot" class="dot"></span><span id="statusText">מתחבר…</span></div>
 </header>
@@ -336,7 +366,9 @@ document.querySelectorAll('.tabbar button').forEach(function(b){
     document.querySelectorAll('.tabbar button').forEach(function(x){x.classList.remove('on');});
     b.classList.add('on');
     ['viewInfo','viewGeneral','viewAdd','viewSummary'].forEach(function(v){ $(v).classList.add('hidden'); });
-    $(b.dataset.view).classList.remove('hidden');
+    var sec=$(b.dataset.view);
+    sec.classList.remove('hidden');
+    sec.classList.remove('view-anim'); void sec.offsetWidth; sec.classList.add('view-anim');
     if(b.dataset.view==='viewInfo') updateFlightStatuses();
   };
 });
@@ -489,8 +521,9 @@ function render(d){
       else if(rem!==null && rem<-0.5){ cls='gets'; label=needWord(s.name)+' לקבל ' + fmtNIS(rem); }
       var row=document.createElement('div'); row.className='person';
       row.innerHTML =
-        '<div><div class="name">'+esc(s.name)+'</div>'+
-        '<div class="meta">שילם '+ (s.paidText||fmtNIS(s.paid)) +' · חלקו '+ (s.shareText||fmtNIS(s.share)) +'</div></div>'+
+        '<div class="p-id"><span class="avatar" style="background:'+avatarColor(s.name)+'">'+esc(initial(s.name))+'</span>'+
+        '<span><span class="name">'+esc(s.name)+'</span>'+
+        '<span class="meta">שילם '+ (s.paidText||fmtNIS(s.paid)) +' · חלקו '+ (s.shareText||fmtNIS(s.share)) +'</span></span></div>'+
         '<div class="badge '+cls+'">'+label+'</div>';
       box.appendChild(row);
     });
@@ -520,6 +553,15 @@ function formatRaw(a,c){
   return (c||'') + n.toLocaleString('he-IL');
 }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m];}); }
+function initial(n){ return (String(n||'?').trim().charAt(0))||'?'; }
+var AV_COLORS={ 'רועי':'#1556d6', 'אילנה':'#c0392b', 'לואיז ויעקב':'#1e8e4f' };
+function avatarColor(n){ if(AV_COLORS[n]) return AV_COLORS[n]; var h=0; for(var i=0;i<n.length;i++) h=(h*31+n.charCodeAt(i))%360; return 'hsl('+h+',55%,45%)'; }
+function skel(n){ var s=''; for(var i=0;i<(n||3);i++){ s+='<div class="skel-row"><div class="skel" style="width:'+(48+i*14)+'%"></div></div>'; } return s; }
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme', t);
+  var b=$('themeBtn'); if(b) b.textContent=(t==='dark'?'☀️':'🌙');
+  var m=document.querySelector('meta[name="theme-color"]'); if(m) m.setAttribute('content', t==='dark'?'#0f1522':'#0b3d91');
+}
 
 var _infoKey=null;
 // one flight card (cols: 0 date,1 code,2 origin,3 depTime,4 origLoc,5 dest,6 arrDate,7 arrTime,8 destLoc,9 duration,10 notes)
@@ -715,6 +757,11 @@ function renderPhrases(){
 $('refreshBtn').onclick=loadData;
 $('addBtn').onclick=addExpense;
 
+/* theme toggle */
+var theme = localStorage.getItem('theme') || 'light';
+applyTheme(theme);
+$('themeBtn').onclick=function(){ theme=(theme==='dark'?'light':'dark'); localStorage.setItem('theme',theme); applyTheme(theme); };
+
 /* converter */
 $('convKrw').addEventListener('input', convFromKrw);
 $('convNis').addEventListener('input', convFromNis);
@@ -748,6 +795,7 @@ setSelDate(todayStr());
 setCountdown();
 renderPhrases();
 tickClock(); setInterval(tickClock, 1000);
+['people','flights','lodging','recent'].forEach(function(id){ var el=$(id); if(el) el.innerHTML=skel(3); });  // loading skeletons
 try{ var _c=JSON.parse(localStorage.getItem('cachedData')||'null'); if(_c){ lastData=_c; render(_c); } }catch(e){}  // show last data instantly / offline
 loadData();
 startPolling();
