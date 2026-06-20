@@ -157,9 +157,10 @@
   .conv > div{flex:1}
   .conv .swap{font-size:20px; color:var(--muted); padding-bottom:12px}
   /* countdown */
-  .countdown{text-align:center; padding:20px 18px}
-  .cd-num{font-size:46px; font-weight:800; color:var(--blue2); line-height:1; display:block}
-  .cd-label{font-size:15px; color:var(--muted); font-weight:700; margin-top:6px; display:block}
+  .countdown{padding:16px 18px; display:flex; align-items:center; justify-content:center; gap:10px}
+  .cd-num{font-size:42px; font-weight:800; color:var(--blue2); line-height:1}
+  .cd-text{font-size:19px; font-weight:700; color:var(--ink)}
+  .cd-msg{font-size:19px; font-weight:800; color:var(--ink)}
   /* Israel clock + phrases (שימושי tab) */
   .clock{font-size:34px; font-weight:800; color:var(--blue); text-align:center; font-variant-numeric:tabular-nums; letter-spacing:1px; direction:ltr}
   .ph{padding:9px 0; border-top:1px solid var(--line)}
@@ -719,8 +720,10 @@ function setCountdown(){
   var dep=new Date(2026,5,23), ret=new Date(2026,6,16);
   var now=new Date(), t0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
   var d=Math.round((dep-t0)/86400000);
-  if(d>0){ el.innerHTML='<span class="cd-num">'+d+'</span><span class="cd-label">'+(d===1?'יום':'ימים')+' לטיסה ✈️</span>'; el.style.display=''; }
-  else if(t0<=ret){ el.innerHTML='<span class="cd-label" style="font-size:17px">🇰🇷 יום '+(Math.round((t0-dep)/86400000)+1)+' לטיול — תהנו!</span>'; el.style.display=''; }
+  if(d>=2){ el.innerHTML='<span class="cd-num">'+d+'</span><span class="cd-text">ימים לטיסה ✈️</span>'; el.style.display='flex'; }
+  else if(d===1){ el.innerHTML='<span class="cd-msg">מחר טסים! ✈️</span>'; el.style.display='flex'; }
+  else if(d===0){ el.innerHTML='<span class="cd-msg">היום טסים לקוריאה! ✈️</span>'; el.style.display='flex'; }
+  else if(t0<=ret){ el.innerHTML='<span class="cd-msg">🇰🇷 יום '+(Math.round((t0-dep)/86400000)+1)+' לטיול — תהנו!</span>'; el.style.display='flex'; }
   else { el.style.display='none'; }
 }
 
