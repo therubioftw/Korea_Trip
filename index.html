@@ -161,6 +161,7 @@
   .cd-num{font-size:42px; font-weight:800; color:var(--blue2); line-height:1}
   .cd-text{font-size:19px; font-weight:700; color:var(--ink)}
   .cd-msg{font-size:19px; font-weight:800; color:var(--ink)}
+  .cd-sub{font-size:14px; font-weight:700; color:var(--muted)}
   /* Israel clock + phrases (שימושי tab) */
   .clock{font-size:34px; font-weight:800; color:var(--blue); text-align:center; font-variant-numeric:tabular-nums; letter-spacing:1px; direction:ltr}
   .ph{padding:9px 0; border-top:1px solid var(--line)}
@@ -717,14 +718,23 @@ function deleteExpenseRow(){
 /* ---------- trip countdown ---------- */
 function setCountdown(){
   var el=$('countdownCard'); if(!el) return;
-  var dep=new Date(2026,5,23), ret=new Date(2026,6,16);
+  var dep=new Date(2026,5,23), arr=new Date(2026,5,24), ret=new Date(2026,6,16);
   var now=new Date(), t0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
-  var d=Math.round((dep-t0)/86400000);
-  if(d>=2){ el.innerHTML='<span class="cd-num">'+d+'</span><span class="cd-text">ימים לטיסה ✈️</span>'; el.style.display='flex'; }
-  else if(d===1){ el.innerHTML='<span class="cd-msg">מחר טסים! ✈️</span>'; el.style.display='flex'; }
-  else if(d===0){ el.innerHTML='<span class="cd-msg">היום טסים לקוריאה! ✈️</span>'; el.style.display='flex'; }
-  else if(t0<=ret){ el.innerHTML='<span class="cd-msg">🇰🇷 יום '+(Math.round((t0-dep)/86400000)+1)+' לטיול — תהנו!</span>'; el.style.display='flex'; }
-  else { el.style.display='none'; }
+  var d=Math.round((dep-t0)/86400000);   // days until the outbound flight
+  var r=Math.round((ret-t0)/86400000);   // days until the return flight
+  el.style.flexDirection='row'; el.style.gap='10px';
+  if(d>=2){ el.innerHTML='<span class="cd-num">'+d+'</span><span class="cd-text">ימים לטיסה ✈️</span>'; }
+  else if(d===1){ el.innerHTML='<span class="cd-msg">מחר טסים! ✈️</span>'; }
+  else if(d===0){ el.innerHTML='<span class="cd-msg">היום טסים לקוריאה! ✈️</span>'; }
+  else if(r>0){
+    var dayK=Math.round((t0-arr)/86400000)+1;
+    var back = (r===1) ? 'מחר טסים הביתה ✈️' : ('עוד '+r+' ימים לטיסה הביתה ✈️');
+    el.style.flexDirection='column'; el.style.gap='4px';
+    el.innerHTML='<span class="cd-msg">🇰🇷 יום '+dayK+' בקוריאה</span><span class="cd-sub">'+back+'</span>';
+  }
+  else if(r===0){ el.innerHTML='<span class="cd-msg">✈️ היום טסים הביתה!</span>'; }
+  else { el.style.display='none'; return; }
+  el.style.display='flex';
 }
 
 /* ---------- Israel clock + Korean phrases (שימושי) ---------- */
