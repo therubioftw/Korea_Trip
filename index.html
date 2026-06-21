@@ -201,7 +201,7 @@
 
 <div class="wrap">
 
-  <div id="installBar" class="installbar hidden">
+  <div id="installBar" class="installbar" style="display:none">
     <span class="t">📲 הוסיפו את האפליקציה למסך הבית</span>
     <button id="installBtn">התקן</button>
     <button id="installX" class="x" aria-label="סגור">✕</button>
@@ -843,20 +843,22 @@ function renderPhrases(){
 $('refreshBtn').onclick=loadData;
 $('addBtn').onclick=addExpense;
 
-/* install to home screen */
+/* install to home screen (mobile browser only; dismissible & remembered) */
 var deferredPrompt=null;
 function isStandalone(){ return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone===true; }
+function isMobile(){ return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent); }
+function hideInstall(){ $('installBar').style.display='none'; }
 window.addEventListener('beforeinstallprompt', function(e){
   e.preventDefault(); deferredPrompt=e;
-  if(!isStandalone()) $('installBar').classList.remove('hidden');
+  if(!isStandalone() && isMobile() && !localStorage.getItem('installDismissed')){ $('installBar').style.display='flex'; }
 });
 $('installBtn').onclick=function(){
   if(!deferredPrompt){ toast('פתחו את הקישור ב‑Chrome כדי להתקין',true); return; }
   deferredPrompt.prompt();
-  deferredPrompt.userChoice.finally(function(){ deferredPrompt=null; $('installBar').classList.add('hidden'); });
+  deferredPrompt.userChoice.finally(function(){ deferredPrompt=null; hideInstall(); });
 };
-$('installX').onclick=function(){ $('installBar').classList.add('hidden'); };
-window.addEventListener('appinstalled', function(){ $('installBar').classList.add('hidden'); });
+$('installX').onclick=function(){ localStorage.setItem('installDismissed','1'); hideInstall(); };
+window.addEventListener('appinstalled', function(){ localStorage.setItem('installDismissed','1'); hideInstall(); });
 
 /* theme toggle */
 var theme = localStorage.getItem('theme') || 'light';
