@@ -1,10 +1,10 @@
 /* Service worker.
-   - The PAGE (index.html / navigations) is served NETWORK-FIRST, so everyone
-     always gets the latest version on the normal root URL; the cached copy is
-     used only as an offline fallback.
-   - Static assets (icons, manifest) are cache-first for speed.
-   - API calls to Apps Script are never touched — always live. */
-var CACHE = 'korea-expenses-v4';
+   - The PAGE and the MANIFEST are served NETWORK-FIRST (bypassing the HTTP cache),
+     so the latest version, name and icon always win; cached copies are an offline fallback.
+   - Other static assets (icons) are cache-first for speed.
+   - API calls to Apps Script are never touched — always live.
+   Bump CACHE whenever icons/manifest change so installed devices re-fetch them. */
+var CACHE = 'korea-expenses-v5';
 var SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', function (e) {
@@ -30,26 +30,26 @@ self.addEventListener('fetch', function (e) {
     return;
   }
 
-  var isPage = req.mode === 'navigate' ||
-               req.destination === 'document' ||
-               url.indexOf('index.html') !== -1 ||
-               url.replace(/[?#].*$/, '').endsWith('/');
+  var isPage = req.mode === 'navigate' || req.destination === 'document' ||
+               url.indexOf('index.html') !== -1 || url.replace(/[?#].*$/, '').endsWith('/');
+  var isManifest = url.indexOf('manifest.json') !== -1;
 
-  if (isPage) {
-    // NETWORK-FIRST, bypassing the HTTP cache so the newest deploy always wins.
+  if (isPage || isManifest) {
+    // NETWORK-FIRST, bypassing the HTTP cache so the newest deploy/name/icon always wins.
+    var target = isManifest ? './manifest.json' : './index.html';
     e.respondWith(
-      fetch('./index.html', { cache: 'no-store' }).then(function (res) {
+      fetch(target, { cache: 'no-store' }).then(function (res) {
         var copy = res.clone();
-        caches.open(CACHE).then(function (c) { c.put('./index.html', copy); });
+        caches.open(CACHE).then(function (c) { c.put(target, copy); });
         return res;
       }).catch(function () {
-        return caches.match('./index.html').then(function (hit) { return hit || caches.match('./'); });
+        return caches.match(target).then(function (hit) { return hit || caches.match('./'); });
       })
     );
     return;
   }
 
-  // Static assets: cache-first, fall back to network.
+  // Static assets (icons): cache-first, fall back to network.
   e.respondWith(
     caches.match(req).then(function (hit) {
       return hit || fetch(req).then(function (res) {
