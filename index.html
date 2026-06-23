@@ -619,8 +619,8 @@ function renderInfo(d){
   if(!L.length){ lb.innerHTML='<div class="empty">אין נתוני לינה</div>'; }
   else{
     var h2='';
-    L.forEach(function(r){
-      var maps='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(r[3]||r[4]||'');
+    L.forEach(function(r, idx){
+      var maps='https://map.naver.com/p/search/'+encodeURIComponent(r[4]||r[3]||'');
       var tel=(r[7]||'').replace(/[^+\d]/g,'');
       h2+='<div class="lg">'+
         '<div class="lg-name">'+esc(r[1])+' · '+esc(r[2])+'</div>'+
@@ -630,14 +630,28 @@ function renderInfo(d){
         (r[8]?'<div class="lg-row"><span class="k">שעות:</span> <span class="ltr">'+esc(r[8])+'</span></div>':'')+
         '<div class="lg-row lg-addr"><span class="k">כתובת (אנגלית):</span><br><span class="ltr">'+esc(r[3])+'</span></div>'+
         '<div class="lg-row lg-addr"><span class="k">כתובת (קוריאנית):</span><br><span class="ltr">'+esc(r[4])+'</span></div>'+
-        '<div><a class="lg-link" href="'+esc(maps)+'" target="_blank" rel="noopener">📍 פתח במפות</a></div>'+
+        '<div><a class="lg-link" href="'+esc(maps)+'" target="_blank" rel="noopener">📍 פתח במפות (Naver)</a></div>'+
+        (idx===0?'<div><a class="lg-link" href="#" data-route="1">🚕 מסלול משדה התעופה למלון (Naver)</a></div>':'')+
         (tel?'<div><a class="lg-link" href="tel:'+esc(tel)+'">📞 <span class="ltr">'+esc(r[7])+'</span></a></div>':'')+
         (r[9]?'<div><a class="lg-link" href="'+esc(r[9])+'" target="_blank" rel="noopener">🔗 קישור להזמנה</a></div>':'')+
       '</div>';
     });
     lb.innerHTML=h2;
+    var rt=lb.querySelector('[data-route]'); if(rt) rt.onclick=function(e){ e.preventDefault(); naverAirportRoute(); };
   }
   updateFlightStatuses();
+}
+
+/* ---------- airport → hotel route (Naver app, web fallback) ---------- */
+function naverAirportRoute(){
+  var sname='인천공항 제1여객터미널';
+  var dname='은평구 통일로78길 26-9 (불광 트레비앙)';
+  var app='nmap://route/public?slat=37.4491&slng=126.4509&sname='+encodeURIComponent(sname)
+         +'&dlat=37.6116&dlng=126.9290&dname='+encodeURIComponent(dname)+'&appname=therubioftw.github.io';
+  var web='https://map.naver.com/p/search/'+encodeURIComponent('은평구 통일로78길 26-9');
+  var t=setTimeout(function(){ window.location.href=web; }, 1500);          // no Naver app → open hotel in Naver web
+  document.addEventListener('visibilitychange', function(){ if(document.hidden) clearTimeout(t); }, {once:true});
+  window.location.href=app;
 }
 
 /* ---------- live flight status (fetched via the private Apps Script relay; no key in this app) ---------- */
